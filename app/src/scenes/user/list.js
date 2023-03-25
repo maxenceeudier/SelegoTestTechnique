@@ -4,19 +4,25 @@ import toast from "react-hot-toast";
 import { useHistory } from "react-router-dom";
 import Loader from "../../components/loader";
 import LoadingButton from "../../components/loadingButton";
+import { setUser } from "../../redux/auth/actions";
 import api from "../../services/api";
+import { useDispatch} from "react-redux";
 
 const NewList = () => {
   const [users, setUsers] = useState(null);
   const [projects, setProjects] = useState([]);
   const [usersFiltered, setUsersFiltered] = useState(null);
   const [filter, setFilter] = useState({ status: "active", availability: "", search: "" });
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    (async () => {
-      const { data } = await api.get("/user");
-      setUsers(data);
-    })();
+      (async () => {
+        try {
+        const { data } = await api.get("/user");
+        setUsers(data);
+        }
+        catch(e) {dispatch(setUser(null))}
+      })()
     getProjects();
   }, []);
 
@@ -87,7 +93,6 @@ const NewList = () => {
 
 const Create = () => {
   const [open, setOpen] = useState(false);
-
   const history = useHistory();
 
   return (
@@ -114,13 +119,13 @@ const Create = () => {
                   const res = await api.post("/user", values);
                   if (!res.ok) throw res;
                   toast.success("Created!");
+                  setSubmitting(false);
                   setOpen(false);
                   history.push(`/user/${res.data._id}`);
                 } catch (e) {
                   console.log(e);
                   toast.error("Some Error!", e.code);
                 }
-                setSubmitting(false);
               }}>
               {({ values, handleChange, handleSubmit, isSubmitting }) => (
                 <React.Fragment>
@@ -128,7 +133,7 @@ const Create = () => {
                     <div className="flex justify-between flex-wrap">
                       <div className="w-full md:w-[48%] mt-2">
                         <div className="text-[14px] text-[#212325] font-medium	">Name</div>
-                        <input className="projectsInput text-[14px] font-normal text-[#212325] rounded-[10px]" name="username" value={values.username} onChange={handleChange} />
+                        <input className="projectsInput text-[14px] font-normal text-[#212325] rounded-[10px]" name="name" value={values.name} onChange={handleChange} />
                       </div>
                       <div className="w-full md:w-[48%] mt-2">
                         <div className="text-[14px] text-[#212325] font-medium	">Email</div>
@@ -148,6 +153,7 @@ const Create = () => {
                   <LoadingButton
                     className="mt-[1rem]  bg-[#0560FD] text-[16px] font-medium text-[#FFFFFF] py-[12px] px-[22px] rounded-[10px]"
                     loading={isSubmitting}
+                    type='submit'
                     onClick={handleSubmit}>
                     Save
                   </LoadingButton>

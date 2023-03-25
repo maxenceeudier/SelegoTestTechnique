@@ -25,13 +25,13 @@ export default () => {
         onSubmit={async (values, actions) => {
           try {
             const { user, token } = await api.post(`/user/signup`, values);
+            actions.setSubmitting(false);
             if (token) api.setToken(token);
             if (user) dispatch(setUser(user));
           } catch (e) {
             console.log("e", e);
-            toast.error("Wrong login", e.code);
+            toast.error(`Wrong login, ${e.code}`);
           }
-          actions.setSubmitting(false);
         }}>
         {({ values, errors, isSubmitting, handleChange, handleSubmit }) => {
           return (

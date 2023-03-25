@@ -1,16 +1,19 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import api from "../../services/api";
 
 const Home = () => {
   const [availableUsers, setAvailableUsers] = useState();
+  
 
   async function getUser() {
     const { data } = await api.get("/user/available");
     setAvailableUsers(data);
   }
+
   useEffect(() => {
     getUser();
   }, []);
+
 
   return (
     <div className="px-2 md:!px-8 flex flex-col md:flex-row gap-5 mt-5">

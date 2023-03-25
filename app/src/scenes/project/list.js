@@ -11,6 +11,8 @@ import api from "../../services/api";
 const ProjectList = () => {
   const [projects, setProjects] = useState(null);
   const [activeProjects, setActiveProjects] = useState(null);
+  const [refreshState, setRefreshState] = useState(false);
+  const [filter, setFilter] = useState({ status: "active" });
 
   const history = useHistory();
 
@@ -19,23 +21,29 @@ const ProjectList = () => {
       const { data: u } = await api.get("/project");
       setProjects(u);
     })();
-  }, []);
+  }, [refreshState]);
+
+  const refreshProjects = () => {
+    setRefreshState(!refreshState);
+  }
 
   useEffect(() => {
-    const p = (projects || []).filter((p) => p.status === "active");
+    if (!projects) return;
+    const p = (projects || []).filter((u) => !filter?.status || u.status === filter?.status);//.filter((p) => p.status === "active");
     setActiveProjects(p);
-  }, [projects]);
+  }, [projects, filter]);
 
   if (!projects || !activeProjects) return <Loader />;
 
   const handleSearch = (searchedValue) => {
-    const p = (projects || []).filter((p) => p.status === "active").filter((e) => e.name.toLowerCase().includes(searchedValue.toLowerCase()));
+    const p = (projects || []).filter((u) => !filter?.status || u.status === filter?.status).filter((e) => e.name.toLowerCase().includes(searchedValue.toLowerCase()));
     setActiveProjects(p);
   };
 
   return (
     <div className="w-full p-2 md:!px-8">
-      <Create onChangeSearch={handleSearch} />
+      <Create onChangeSearch={handleSearch} refreshProjects={refreshProjects} />
+      <FilterStatus filter={filter} setFilter={setFilter} />
       <div className="py-3">
         {activeProjects.map((hit) => {
           return (
@@ -92,7 +100,7 @@ const Budget = ({ project }) => {
   return <ProgressBar percentage={width} max={budget_max_monthly} value={total} />;
 };
 
-const Create = ({ onChangeSearch }) => {
+const Create = ({onChangeSearch, refreshProjects}) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -142,22 +150,26 @@ const Create = ({ onChangeSearch }) => {
               onSubmit={async (values, { setSubmitting }) => {
                 try {
                   values.status = "active";
+                  if (!values.name)
+                    return toast.error("Name can't be empty");
                   const res = await api.post("/project", values);
                   if (!res.ok) throw res;
                   toast.success("Created!");
+                  setSubmitting(false);
                   setOpen(false);
+                  refreshProjects();
                 } catch (e) {
                   console.log(e);
                   toast.error("Some Error!", e.code);
                 }
-                setSubmitting(false);
-              }}>
+              }}
+              >
               {({ values, handleChange, handleSubmit, isSubmitting }) => (
                 <React.Fragment>
                   <div className="w-full md:w-6/12 text-left">
                     <div>
                       <div className="text-[14px] text-[#212325] font-medium	">Name</div>
-                      <input className="projectsInput text-[14px] font-normal text-[#212325] rounded-[10px]" name="name" value={values.name} onChange={handleChange} />
+                      <input className="projectsInput text-[14px] font-normal text-[#212325] rounded-[10px]" name="name" value={values.name? values.name : ""} onChange={handleChange} />
                     </div>
                     <LoadingButton
                       className="mt-[1rem] bg-[#0560FD] text-[16px] font-medium text-[#FFFFFF] py-[12px] px-[22px] rounded-[10px]"
@@ -172,6 +184,30 @@ const Create = ({ onChangeSearch }) => {
           </div>
         </div>
       ) : null}
+    </div>
+  );
+};
+
+const FilterStatus = ({ filter, setFilter }) => {
+  return (
+    <div className="flex">
+      <select
+        className="w-[180px] bg-[#FFFFFF] text-[14px] text-[#212325] font-normal py-2 px-[14px] rounded-[10px] border-r-[16px] border-[transparent] cursor-pointer"
+        value={filter.status}
+        onChange={(e) => setFilter({ ...filter, status: e.target.value })}>
+        <option disabled>Status</option>
+        <option value={""}>All status</option>
+        {[
+          { value: "active", label: "Active" },
+          { value: "inactive", label: "Inactive" },
+        ].map((e) => {
+          return (
+            <option key={e.value} value={e.value} label={e.label}>
+              {e.label}
+            </option>
+          );
+        })}
+      </select>
     </div>
   );
 };

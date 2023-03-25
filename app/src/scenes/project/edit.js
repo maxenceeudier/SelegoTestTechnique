@@ -28,7 +28,7 @@ export default function EditProject() {
     if (!confirm) return;
     await api.remove(`/project/${id}`);
     toast.success("successfully removed!");
-    history.push("/projects");
+    history.push("/project");
   }
 
   if (!project) return <Loader />;
@@ -50,7 +50,7 @@ export default function EditProject() {
               try {
                 await api.put(`/project/${project._id}`, values);
                 toast.success(`${project.name} updated!`);
-                history.push(`/project/${project._id}`);
+                history.push(`/project`);
               } catch (e) {
                 console.log(e);
                 toast.error("Some Error!");

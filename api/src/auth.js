@@ -11,7 +11,7 @@ const PASSWORD_TOKEN_EXPIRED_OR_INVALID = "PASSWORD_TOKEN_EXPIRED_OR_INVALID";
 const PASSWORDS_NOT_MATCH = "PASSWORDS_NOT_MATCH";
 const SERVER_ERROR = "SERVER_ERROR";
 const USER_ALREADY_REGISTERED = "USER_ALREADY_REGISTERED";
-const PASSWORD_NOT_VALIDATED = "PASSWORD_NOT_VALIDATED";
+const PASSWORD_NOT_VALIDATED = "Password must be between 6 and 100 characters";
 const ACOUNT_NOT_ACTIVATED = "ACOUNT_NOT_ACTIVATED";
 const USER_NOT_EXISTS = "USER_NOT_EXISTS";
 
@@ -61,14 +61,14 @@ class Auth {
     try {
       const { password, username, organisation } = req.body;
 
-      if (password && !validatePassword(password)) return res.status(200).send({ ok: false, user: null, code: PASSWORD_NOT_VALIDATED });
-
+      if (password && !validatePassword(password)) return res.status(401).send({ ok: false, user: null, code: PASSWORD_NOT_VALIDATED });
       const user = await this.model.create({ name: username, organisation, password });
       const token = jwt.sign({ _id: user._id }, config.secret, { expiresIn: JWT_MAX_AGE });
       const opts = { maxAge: COOKIE_MAX_AGE, secure: config.ENVIRONMENT === "development" ? false : true, httpOnly: false };
       res.cookie("jwt", token, opts);
 
       return res.status(200).send({ user, token, ok: true });
+      
     } catch (error) {
       console.log("e", error);
       if (error.code === 11000) return res.status(409).send({ ok: false, code: USER_ALREADY_REGISTERED });

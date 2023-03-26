@@ -170,8 +170,8 @@ const Create = () => {
                           validate={(v) => {
                             if (!v || validator.isEmpty(v))
                               return "This field is Required";
-                            if (v.length < 6)
-                              return "password must be minimum 6 characteres";
+                              if (v.length < 6 || v.length > 100)
+                              return "password must be between 6 and 100 characteres";
                             }}
                           className="projectsInput text-[14px] font-normal text-[#212325] rounded-[10px]"
                           name="password"

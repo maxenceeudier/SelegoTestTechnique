@@ -79,8 +79,8 @@ export default () => {
                     validate={(v) => {
                       if (!v || validator.isEmpty(v))
                         return "This field is Required";
-                      if (v.length < 6)
-                        return "password must be minimum 6 characteres";
+                      if (v.length < 6 || v.length > 100)
+                        return "password must be between 6 and 100 characteres";
                       }}
                     name="password"
                     type="password"

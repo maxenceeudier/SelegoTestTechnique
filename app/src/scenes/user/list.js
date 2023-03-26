@@ -1,4 +1,4 @@
-import { Formik } from "formik";
+import { Field, Formik } from "formik";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useHistory } from "react-router-dom";
@@ -7,6 +7,7 @@ import LoadingButton from "../../components/loadingButton";
 import { setUser } from "../../redux/auth/actions";
 import api from "../../services/api";
 import { useDispatch} from "react-redux";
+import validator from "validator";
 
 const NewList = () => {
   const [users, setUsers] = useState(null);
@@ -127,24 +128,58 @@ const Create = () => {
                   toast.error("Some Error!", e.code);
                 }
               }}>
-              {({ values, handleChange, handleSubmit, isSubmitting }) => (
+              {({ values, errors, handleChange, handleSubmit, isSubmitting }) => (
                 <React.Fragment>
                   <div>
                     <div className="flex justify-between flex-wrap">
                       <div className="w-full md:w-[48%] mt-2">
                         <div className="text-[14px] text-[#212325] font-medium	">Name</div>
-                        <input className="projectsInput text-[14px] font-normal text-[#212325] rounded-[10px]" name="name" value={values.name} onChange={handleChange} />
+                        <Field
+                          validate={(v) => (!v || validator.isEmpty(v)) && "This field is Required"}
+                          className="projectsInput text-[14px] font-normal text-[#212325] rounded-[10px]"
+                          name="name"
+                          value={values.name? values.name : ""}
+                          onChange={handleChange}
+                        />
+                        {/* Error */}
+                        <p className="text-[12px] text-[#FD3131]">{errors.name}</p>
                       </div>
                       <div className="w-full md:w-[48%] mt-2">
                         <div className="text-[14px] text-[#212325] font-medium	">Email</div>
-                        <input className="projectsInput text-[14px] font-normal text-[#212325] rounded-[10px]" name="email" value={values.email} onChange={handleChange} />
+                        <Field
+                          validate={(v) => {
+                            if (!v || validator.isEmpty(v))
+                              return "This field is Required";
+                            if (!validator.isEmail(v))
+                              return "This is not a valid email"
+                          }}
+                          className="projectsInput text-[14px] font-normal text-[#212325] rounded-[10px]"
+                          name="email"
+                          value={values.email? values.email : ""}
+                          onChange={handleChange}
+                        />
+                        {/* Error */}
+                        <p className="text-[12px] text-[#FD3131]">{errors.email}</p>
                       </div>
                     </div>
                     <div className="flex justify-between flex-wrap mt-3">
                       {/* Password */}
                       <div className="w-full md:w-[48%] mt-2">
                         <div className="text-[14px] text-[#212325] font-medium	">Password</div>
-                        <input className="projectsInput text-[14px] font-normal text-[#212325] rounded-[10px]" name="password" value={values.password} onChange={handleChange} />
+                        <Field
+                          validate={(v) => {
+                            if (!v || validator.isEmpty(v))
+                              return "This field is Required";
+                            if (v.length < 6)
+                              return "password must be minimum 6 characteres";
+                            }}
+                          className="projectsInput text-[14px] font-normal text-[#212325] rounded-[10px]"
+                          name="password"
+                          value={values.password? values.password : ""}
+                          onChange={handleChange}
+                        />
+                        {/* Error */}
+                        <p className="text-[12px] text-[#FD3131]">{errors.password}</p>
                       </div>
                     </div>
                   </div>

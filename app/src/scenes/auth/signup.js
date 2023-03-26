@@ -76,7 +76,12 @@ export default () => {
                 <div className="flex flex-col-reverse">
                   <Field
                     className="peer signInInputs"
-                    validate={(v) => validator.isEmpty(v) && "This field is Required"}
+                    validate={(v) => {
+                      if (!v || validator.isEmpty(v))
+                        return "This field is Required";
+                      if (v.length < 6)
+                        return "password must be minimum 6 characteres";
+                      }}
                     name="password"
                     type="password"
                     id="password"

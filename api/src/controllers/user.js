@@ -2,6 +2,8 @@ const express = require("express");
 const passport = require("passport");
 const router = express.Router();
 
+const ActivityObject = require("../models/activity");
+const ProjectObject = require("../models/project");
 const UserObject = require("../models/user");
 const AuthObject = require("../auth");
 
@@ -89,6 +91,17 @@ router.put("/", passport.authenticate("user", { session: false }), async (req, r
 
 router.delete("/:id", passport.authenticate("user", { session: false }), async (req, res) => {
   try {
+    const users = await UserObject.find({ organisation: req.user.organisation });
+    /*if we del the last user of the organisation*/
+    if (users.length === 1)
+    {
+      const projects = await ProjectObject.find({organisation: req.user.organisation});
+      const delOrganisation = projects.map(async (e) => {
+        await ProjectObject.findOneAndRemove({_id: e.id});
+        await ActivityObject.findOneAndRemove({projectId: e.id});
+      });
+      await Promise.all(delOrganisation);
+    }
     await UserObject.findOneAndRemove({ _id: req.params.id });
     res.status(200).send({ ok: true });
   } catch (error) {

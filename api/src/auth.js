@@ -61,6 +61,9 @@ class Auth {
     try {
       const { password, username, organisation } = req.body;
 
+      const userAlreadyExist = await this.model.findOne({name: username});
+      if (userAlreadyExist) return res.status(409).send({ ok: false, code: USER_ALREADY_REGISTERED });
+
       if (password && !validatePassword(password)) return res.status(401).send({ ok: false, user: null, code: PASSWORD_NOT_VALIDATED });
       const user = await this.model.create({ name: username, organisation, password });
       const token = jwt.sign({ _id: user._id }, config.secret, { expiresIn: JWT_MAX_AGE });
